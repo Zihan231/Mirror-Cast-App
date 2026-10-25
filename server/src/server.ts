@@ -78,8 +78,12 @@ export async function startServer(config: Config, log: Logger, deps: ServerDeps 
     if (new URL(req.url ?? "/", "http://x").pathname !== WS_PATH) return reject(404, "Not Found");
 
     // Browsers always send Origin; the native apps never do. Default: refuse every browser origin.
+    // The dev test page is the one browser client we ship: allow it to talk to its own server only.
     const origin = req.headers.origin;
-    if (origin && !config.allowedOrigins.includes(origin)) return reject(403, "Forbidden");
+    if (origin && !config.allowedOrigins.includes(origin) && !(config.testPage && isSameOrigin(origin, req))) {
+      log.warn({ origin }, "websocket origin refused");
+      return reject(403, "Forbidden");
+    }
 
     if (config.trustProxy && !config.allowInsecureWs) {
       const proto = pickHop(req.headers["x-forwarded-proto"], config.trustProxyHops);
@@ -183,6 +187,16 @@ export async function startServer(config: Config, log: Logger, deps: ServerDeps 
   };
 
   return { hub, port, stop };
+}
+
+/** True when the page that opened the socket was served by this very server (Origin host == Host header). */
+function isSameOrigin(origin: string, req: IncomingMessage): boolean {
+  try {
+    const host = req.headers.host;
+    return Boolean(host) && new URL(origin).host === host;
+  } catch {
+    return false;
+  }
 }
 
 function pickHop(header: string | string[] | undefined, hops: number): string | undefined {
