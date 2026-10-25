@@ -18,12 +18,14 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -33,6 +35,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -40,6 +43,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.core.app.NotificationManagerCompat
@@ -49,19 +53,29 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LifecycleEventEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import app.mirror.sender.BuildConfig
 import app.mirror.sender.R
 import app.mirror.sender.capture.CaptureService
 import app.mirror.sender.capture.CaptureState
 import app.mirror.sender.capture.FailureReason
 import app.mirror.sender.capture.StopReason
 import app.mirror.sender.capture.isActive
+import app.mirror.sender.stream.StreamFailure
+import app.mirror.sender.stream.StreamState
+import app.mirror.sender.stream.isBusy
 
 @Composable
 fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
     val context = LocalContext.current
     val state by viewModel.captureState.collectAsStateWithLifecycle()
     val message by viewModel.message.collectAsStateWithLifecycle()
+    val streamState by viewModel.streamState.collectAsStateWithLifecycle()
     val snackbar = remember { SnackbarHostState() }
+
+    // Dev connect fields. The code is single-use and is cleared as soon as it has been handed over.
+    var server by rememberSaveable { mutableStateOf(viewModel.lastServer) }
+    var code by rememberSaveable { mutableStateOf("") }
+    var devError by remember { mutableStateOf<DevInputError?>(null) }
 
     // Re-checked on resume: the user may flip the setting in system settings and come back.
     var notificationsEnabled by remember { mutableStateOf(NotificationManagerCompat.from(context).areNotificationsEnabled()) }
@@ -96,7 +110,10 @@ fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
     }
 
     fun onStart() {
-        viewModel.onStartRequested()
+        val error = viewModel.onStartRequested(server, code)
+        devError = error
+        if (error != null) return
+        code = ""
         val needsRuntimePermission = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
             ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS) != PackageManager.PERMISSION_GRANTED
         if (needsRuntimePermission) notificationLauncher.launch(Manifest.permission.POST_NOTIFICATIONS) else launchConsent()
@@ -127,6 +144,23 @@ fun HomeScreen(viewModel: HomeViewModel = hiltViewModel()) {
             Text(stringResource(R.string.home_title), style = MaterialTheme.typography.headlineMedium)
 
             StatusCard(state = state, onDismiss = viewModel::onDismissStatus)
+
+            if (BuildConfig.DEBUG) {
+                DevConnectCard(
+                    server = server,
+                    onServerChange = { server = it },
+                    code = code,
+                    onCodeChange = { code = it.filter(Char::isDigit).take(6) },
+                    error = devError,
+                    streamState = streamState,
+                    canConnect = state is CaptureState.Capturing && !streamState.isBusy,
+                    onConnect = {
+                        val error = viewModel.onConnectRequested(server, code)
+                        devError = error
+                        if (error == null) code = ""
+                    },
+                )
+            }
 
             if (!notificationsEnabled) {
                 NotificationsOffCard(onOpenSettings = { openNotificationSettings(context) })
@@ -208,6 +242,7 @@ private fun statusText(state: CaptureState): String = when (state) {
     is CaptureState.Capturing -> stringResource(R.string.status_capturing, state.width, state.height, state.fps)
     is CaptureState.Stopped -> when (state.reason) {
         StopReason.USER_REQUESTED -> stringResource(R.string.stopped_user)
+        StopReason.REMOTE_ENDED -> stringResource(R.string.stopped_remote)
         StopReason.SYSTEM -> stringResource(R.string.stopped_system)
     }
     is CaptureState.Failed -> when (state.reason) {

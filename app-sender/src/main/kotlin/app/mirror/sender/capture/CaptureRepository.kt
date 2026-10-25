@@ -5,11 +5,20 @@ import app.mirror.core.webrtc.CaptureConfig
 import app.mirror.core.webrtc.ScreenCapture
 import app.mirror.core.webrtc.ScreenCaptureListener
 import app.mirror.core.webrtc.SwitchableVideoSink
+import org.webrtc.VideoTrack
 import javax.inject.Inject
 import javax.inject.Singleton
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+
+/** Lets the streaming layer hold the video track only while it is valid. */
+interface CaptureBridge {
+    fun onCaptureReady(track: VideoTrack)
+
+    /** Called synchronously before the track is disposed; release every reference to it. */
+    fun onCaptureReleasing()
+}
 
 fun interface CaptureSessionFactory {
     fun create(permissionData: Intent, listener: ScreenCaptureListener, previewSink: SwitchableVideoSink): ScreenCapture
@@ -28,6 +37,9 @@ class CaptureRepository @Inject constructor(
 
     /** Stays attached to the active track; the UI points it at a renderer. */
     val previewSink = SwitchableVideoSink()
+
+    /** At most one; set by the stream controller. */
+    var bridge: CaptureBridge? = null
 
     private var session: ScreenCapture? = null
 
@@ -106,6 +118,15 @@ class CaptureRepository @Inject constructor(
             (_state.value as? CaptureState.Capturing)?.let {
                 _state.value = it.copy(contentVisible = visible)
             }
+        }
+
+        override fun onTrackReady(track: VideoTrack) {
+            if (current()) bridge?.onCaptureReady(track)
+        }
+
+        // Deliberately not gated on the generation: stop() bumps it before the session releases.
+        override fun onBeforeRelease() {
+            bridge?.onCaptureReleasing()
         }
 
         override fun onProjectionStopped() {

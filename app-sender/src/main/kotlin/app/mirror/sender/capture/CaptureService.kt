@@ -9,6 +9,7 @@ import android.util.Log
 import androidx.core.app.ServiceCompat
 import androidx.core.content.IntentCompat
 import app.mirror.sender.R
+import app.mirror.sender.stream.StreamController
 import dagger.hilt.android.AndroidEntryPoint
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
@@ -30,6 +31,9 @@ import kotlinx.coroutines.launch
 class CaptureService : Service() {
 
     @Inject lateinit var repository: CaptureRepository
+
+    /** Injected so it is alive (and registered as the capture bridge) before any capture starts. */
+    @Inject lateinit var streamController: StreamController
 
     private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main.immediate)
     private var observing: Job? = null

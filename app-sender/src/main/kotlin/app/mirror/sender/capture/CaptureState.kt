@@ -4,6 +4,9 @@ enum class StopReason {
     /** Stop button in the app or the notification. */
     USER_REQUESTED,
 
+    /** The receiver ended the session. */
+    REMOTE_ENDED,
+
     /** MediaProjection.Callback.onStop: status-bar chip, screen lock, another app took over, revoked. */
     SYSTEM,
 }

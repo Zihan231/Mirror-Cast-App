@@ -166,3 +166,24 @@ describe("pairing", () => {
     expect(await res.json()).toMatchObject({ status: "ok", connections: 1 });
   });
 });
+
+describe("dev test page", () => {
+  it("is served only when enabled, with a restrictive CSP", async () => {
+    h = await startHarness({ ENABLE_TEST_PAGE: "true" });
+    const page = await fetch(`${h.httpUrl}/test`);
+    expect(page.status).toBe(200);
+    expect(page.headers.get("content-type")).toContain("text/html");
+    expect(page.headers.get("content-security-policy")).toContain("script-src 'self'");
+    expect(await page.text()).toContain("<video");
+    const js = await fetch(`${h.httpUrl}/test.js`);
+    expect(js.status).toBe(200);
+    expect(js.headers.get("content-type")).toContain("javascript");
+    expect((await fetch(`${h.httpUrl}/../package.json`)).status).toBe(404);
+  });
+
+  it("is absent by default in cloud mode", async () => {
+    h = await startHarness();
+    expect((await fetch(`${h.httpUrl}/test`)).status).toBe(404);
+    expect((await fetch(`${h.httpUrl}/test.js`)).status).toBe(404);
+  });
+});

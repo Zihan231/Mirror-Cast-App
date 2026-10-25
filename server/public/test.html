@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Mirror test receiver</title>
+  <style>
+    :root { color-scheme: dark; }
+    body { margin: 0; font: 16px/1.4 system-ui, sans-serif; background: #0b0f14; color: #e6edf3; display: grid; grid-template-rows: auto 1fr; height: 100vh; }
+    header { padding: 12px 16px; display: flex; gap: 16px; align-items: center; flex-wrap: wrap; border-bottom: 1px solid #222b36; }
+    h1 { font-size: 16px; margin: 0; font-weight: 600; }
+    #status { color: #9fb1c5; }
+    main { position: relative; display: grid; place-items: center; min-height: 0; }
+    video { max-width: 100%; max-height: 100%; background: #000; }
+    #panel { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; padding: 24px; background: #0b0f14; }
+    #panel.hidden { display: none; }
+    #code { font: 700 72px/1 ui-monospace, monospace; letter-spacing: .15em; margin: 12px 0; }
+    #hint { color: #9fb1c5; max-width: 40ch; margin: 0 auto; }
+    button { font: inherit; padding: 10px 18px; border-radius: 8px; border: 1px solid #3b4a5c; background: #16202b; color: inherit; cursor: pointer; margin: 6px; }
+    button.primary { background: #1e4fd8; border-color: #1e4fd8; }
+    #stats { position: absolute; left: 8px; bottom: 8px; font: 12px ui-monospace, monospace; background: #000a; padding: 4px 8px; border-radius: 6px; white-space: pre; }
+    #approve { display: none; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Mirror test receiver</h1>
+    <span id="status">connecting…</span>
+    <button id="fs" type="button">Fullscreen</button>
+    <button id="newcode" type="button">New code</button>
+  </header>
+  <main>
+    <video id="video" autoplay muted playsinline></video>
+    <div id="panel">
+      <div>
+        <div id="hint">On the phone: enter this server and code, then tap Start.</div>
+        <div id="code">——————</div>
+        <div id="hint2" class="hint"></div>
+        <div id="approve">
+          <div><strong id="who"></strong> wants to share its screen.</div>
+          <button class="primary" id="yes" type="button">Approve</button>
+          <button id="no" type="button">Reject</button>
+        </div>
+      </div>
+    </div>
+    <div id="stats" hidden></div>
+  </main>
+  <script src="/test.js"></script>
+</body>
+</html>

@@ -18,6 +18,7 @@
     <string name="preview_hint">Preview of what will be sent. If this screen is being shared you will see it repeat; that is expected.</string>
 
     <string name="stopped_user">Capture stopped.</string>
+    <string name="stopped_remote">The receiver ended the session.</string>
     <string name="stopped_system">Capture ended. You or the system stopped sharing (for example from the status-bar cast chip, or because the screen was locked).</string>
 
     <string name="failed_projection_rejected">Android refused to start screen capture. Tap Start again and approve the permission dialog.</string>
@@ -36,4 +37,33 @@
     <string name="notification_title">Screen capture is on</string>
     <string name="notification_text_starting">Starting…</string>
     <string name="notification_text_capturing">Capturing %1$d × %2$d</string>
+
+    <string name="dev_title">Dev connect (temporary)</string>
+    <string name="dev_hint">Server and code from the test page (http://&lt;pc-ip&gt;:8080/test). Leave both empty to capture without streaming.</string>
+    <string name="dev_server_label">Server (e.g. 192.168.0.5:8080)</string>
+    <string name="dev_code_label">6-digit code</string>
+    <string name="dev_server_invalid">Enter a host:port or a ws:// / wss:// address.</string>
+    <string name="dev_code_invalid">The code has 6 digits.</string>
+    <string name="dev_fill_both">Fill in both the server and the code.</string>
+    <string name="dev_not_capturing">Start the capture first.</string>
+    <string name="action_connect">Connect</string>
+
+    <string name="stream_idle">Not streaming.</string>
+    <string name="stream_connecting">Connecting to the server…</string>
+    <string name="stream_waiting_approval">Waiting for the receiver to approve…</string>
+    <string name="stream_negotiating">Setting up the connection…</string>
+    <string name="stream_streaming">Streaming to the receiver.</string>
+    <string name="stream_stats">%1$s · %2$d × %3$d · %4$d fps · %5$d kbit/s</string>
+    <string name="stream_stats_encoder">Encoder: %1$s</string>
+    <string name="stream_ended">The receiver ended the session.</string>
+    <string name="stream_failed_server_unreachable">Could not reach the server. Check the address and that you are on the same Wi-Fi.</string>
+    <string name="stream_failed_signaling_lost">Lost the connection to the server before streaming started.</string>
+    <string name="stream_failed_code_rejected">The code is wrong, expired or already used. Get a new code and tap Connect.</string>
+    <string name="stream_failed_rate_limited">Too many wrong codes. Wait a few minutes and try again.</string>
+    <string name="stream_failed_denied">The receiver rejected the connection.</string>
+    <string name="stream_failed_approval_timeout">The receiver did not approve in time. Get a new code and tap Connect.</string>
+    <string name="stream_failed_receiver_gone">The receiver is no longer available. Get a new code and tap Connect.</string>
+    <string name="stream_failed_signaling_error">The server reported a problem.</string>
+    <string name="stream_failed_connection">The video connection failed. Check that both devices are on the same network.</string>
+    <string name="stream_failed_internal">Streaming failed unexpectedly.</string>
 </resources>

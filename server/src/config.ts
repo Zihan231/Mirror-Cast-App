@@ -45,6 +45,7 @@ const EnvSchema = z.object({
   TURN_SECRET: z.string().min(16).optional(),
   TURN_TTL_SECONDS: int(60, 604_800).default(21_600),
 
+  ENABLE_TEST_PAGE: bool.optional(),
   MDNS_ENABLED: bool.optional(),
   MDNS_NAME: z.string().min(1).max(63).default("Mirror Signaling"),
 });
@@ -77,6 +78,8 @@ export interface Config {
   turnUrls: string[];
   turnSecret: string | null;
   turnTtlSeconds: number;
+  /** Serves /test, a browser receiver for development. Defaults to on in LAN mode only. */
+  testPage: boolean;
   mdnsEnabled: boolean;
   mdnsName: string;
 }
@@ -129,6 +132,7 @@ export function loadConfig(env: Record<string, string | undefined> = process.env
     turnUrls: e.TURN_URLS,
     turnSecret: e.TURN_SECRET ?? null,
     turnTtlSeconds: e.TURN_TTL_SECONDS,
+    testPage: e.ENABLE_TEST_PAGE ?? e.MODE === "lan",
     mdnsEnabled: e.MDNS_ENABLED ?? e.MODE === "lan",
     mdnsName: e.MDNS_NAME,
   };

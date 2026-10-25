@@ -1,4 +1,5 @@
 import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { createServer as createHttpServer, type IncomingMessage, type Server as HttpServer } from "node:http";
 import { createServer as createHttpsServer } from "node:https";
 import type { AddressInfo } from "node:net";
@@ -14,6 +15,20 @@ import { MemoryPairingStore, type PairingStore } from "./store.js";
 export const WS_PATH = "/ws";
 export const MDNS_SERVICE_TYPE = "mirrorcast";
 
+// public/ sits next to src/ and dist/ in every layout (tsx, tsc output, Docker image).
+const PUBLIC_DIR = new URL("../public/", import.meta.url);
+
+/** Dev-only browser receiver. CSP: same-origin script, no inline code, sockets only to this host. */
+const TEST_PAGE_CSP = "default-src 'none'; script-src 'self'; style-src 'unsafe-inline'; connect-src 'self' ws: wss:; media-src 'self' blob:; base-uri 'none'; form-action 'none'";
+
+function loadTestAssets(): Map<string, { body: Buffer; type: string }> {
+  const read = (name: string): Buffer => readFileSync(fileURLToPath(new URL(name, PUBLIC_DIR)));
+  return new Map([
+    ["/test", { body: read("test.html"), type: "text/html; charset=utf-8" }],
+    ["/test.js", { body: read("test.js"), type: "text/javascript; charset=utf-8" }],
+  ]);
+}
+
 export interface RunningServer {
   hub: SignalingHub;
   port: number;
@@ -27,6 +42,7 @@ export interface ServerDeps {
 export async function startServer(config: Config, log: Logger, deps: ServerDeps = {}): Promise<RunningServer> {
   const hub = new SignalingHub(config, deps.store ?? new MemoryPairingStore(), log);
   const startedAt = Date.now();
+  const testAssets = config.testPage ? loadTestAssets() : null;
   const connectionsByIp = new Map<string, number>();
 
   const handler = (req: IncomingMessage, res: import("node:http").ServerResponse): void => {
@@ -35,6 +51,12 @@ export async function startServer(config: Config, log: Logger, deps: ServerDeps 
         res.writeHead(200, { "content-type": "application/json", "cache-control": "no-store" });
         res.end(JSON.stringify({ status: "ok", uptimeSeconds: Math.round((Date.now() - startedAt) / 1000), mode: config.mode, ...stats }));
       });
+      return;
+    }
+    const asset = req.method === "GET" ? testAssets?.get((req.url ?? "").split("?")[0] ?? "") : undefined;
+    if (asset) {
+      res.writeHead(200, { "content-type": asset.type, "cache-control": "no-store", "content-security-policy": TEST_PAGE_CSP, "x-content-type-options": "nosniff" });
+      res.end(asset.body);
       return;
     }
     res.writeHead(404, { "content-type": "text/plain" });
@@ -133,7 +155,8 @@ export async function startServer(config: Config, log: Logger, deps: ServerDeps 
   if (config.mdnsEnabled) {
     mdns = startMdns({ name: config.mdnsName, type: MDNS_SERVICE_TYPE, port, path: WS_PATH, tls: Boolean(config.tls) }, log);
   }
-  log.info({ port, mode: config.mode, tls: Boolean(config.tls), publicUrl: hub.publicUrl, mdns: Boolean(mdns) }, "signaling server listening");
+  log.info({ port, mode: config.mode, tls: Boolean(config.tls), publicUrl: hub.publicUrl, mdns: Boolean(mdns), testPage: config.testPage }, "signaling server listening");
+  if (config.testPage && hub.publicUrl) log.info({ url: hub.publicUrl.replace(/^ws/, "http").replace(/\/ws$/, "/test") }, "test page available");
 
   let stopping: Promise<void> | null = null;
   const stop = (): Promise<void> => {

@@ -23,6 +23,15 @@ interface ScreenCaptureListener {
 
     /** The system or the user ended the projection. The session is already torn down. */
     fun onProjectionStopped()
+
+    /** The video track exists and is producing frames. Valid until [onBeforeRelease] returns. */
+    fun onTrackReady(track: VideoTrack) {}
+
+    /**
+     * The session is about to dispose its track. Anything holding the track (a peer connection)
+     * must let go of it synchronously here, before this returns.
+     */
+    fun onBeforeRelease() {}
 }
 
 interface ScreenCapture {
@@ -107,6 +116,7 @@ class ScreenCaptureSession(
             throw t
         }
         listener.onStarted(config)
+        track?.let(listener::onTrackReady)
     }
 
     override fun stop() {
@@ -121,6 +131,7 @@ class ScreenCaptureSession(
     }
 
     private fun releaseResources() {
+        if (!stopped && track != null) runCatching { listener.onBeforeRelease() }
         stopped = true
         permissionData = null
         // Order matters: stop the producer, then dispose consumers, then the thread helper.
