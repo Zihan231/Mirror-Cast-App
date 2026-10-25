@@ -7,13 +7,13 @@ data class IceServerConfig(
 )
 
 /**
- * Target bitrates for 1080p30 screen content. The sender starts at [startBitrateBps] and
- * congestion control moves within [minBitrateBps]..[maxBitrateBps]; on a good Wi-Fi link it
- * settles in the 4-6 Mbps range. The floor is deliberately low so a weak link degrades
- * (fps first, resolution is kept) instead of stalling.
+ * Target bitrates for 1080p30 screen content: 4-6 Mbps, starting at 5. A high floor matters for
+ * screen content: a hardware encoder spends its bit budget on the first frame of a still screen
+ * and never refines it, so a low budget there means blurry text until something changes.
+ * Static screens cost almost nothing on the wire, so the floor does not waste bandwidth.
  */
 data class StreamQuality(
-    val minBitrateBps: Int = 1_000_000,
+    val minBitrateBps: Int = 4_000_000,
     val startBitrateBps: Int = 5_000_000,
     val maxBitrateBps: Int = 6_000_000,
 ) {
