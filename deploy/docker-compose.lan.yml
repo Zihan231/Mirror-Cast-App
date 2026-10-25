@@ -1,0 +1,24 @@
+# LAN mode: runs on any PC/Raspberry Pi on the same Wi-Fi as the TV and phone. No internet needed.
+#
+#   docker compose -f docker-compose.lan.yml up -d --build
+#
+# Host networking is required so mDNS multicast (UDP 5353) leaves the container.
+# Linux only. On Windows/macOS run the server directly instead:
+#   cd server && npm ci && npm run build && npm run start:lan
+#
+# Signaling is cleartext ws:// here by explicit opt-in (ALLOW_INSECURE_WS). Media is still DTLS-SRTP.
+
+services:
+  signaling:
+    build: ../server
+    restart: unless-stopped
+    network_mode: host
+    environment:
+      MODE: lan
+      PORT: "8080"
+      ALLOW_INSECURE_WS: "true"
+      MDNS_NAME: ${MDNS_NAME:-Mirror Signaling}
+      LOG_LEVEL: info
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]

@@ -1,0 +1,30 @@
+# Caddy obtains and renews the certificate automatically (needs ports 80/443 reachable and DNS pointing here).
+# WebSocket upgrades are proxied transparently. Caddy replaces X-Forwarded-For/-Proto sent by untrusted
+# clients, which is what the server's TRUST_PROXY_HOPS=1 relies on.
+{$SIGNALING_DOMAIN} {
+	encode zstd gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options nosniff
+		-Server
+	}
+
+	handle /ws {
+		reverse_proxy signaling:8080 {
+			# Sockets are long-lived (60+ minute mirroring sessions).
+			stream_timeout 24h
+			stream_close_delay 5s
+			health_uri /health
+			health_interval 15s
+		}
+	}
+
+	handle /health {
+		reverse_proxy signaling:8080
+	}
+
+	handle {
+		respond "not found" 404
+	}
+}

@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Mirror</string>
+
+    <string name="home_title">Screen mirroring</string>
+    <string name="action_start">Start</string>
+    <string name="action_stop">Stop</string>
+    <string name="action_quick_cast">Quick cast</string>
+    <string name="quick_cast_hint">Quick cast opens your phone\'s built-in cast settings (Miracast / Google Cast). It does not use this app\'s connection.</string>
+    <string name="action_open_notification_settings">Notification settings</string>
+    <string name="action_dismiss">Dismiss</string>
+
+    <string name="status_idle">Ready. Tap Start, then choose what to share.</string>
+    <string name="status_starting">Waiting for the system…</string>
+    <string name="status_capturing">Capturing %1$d × %2$d at %3$d fps</string>
+    <string name="status_shared_content">Shared content: %1$d × %2$d</string>
+    <string name="status_content_hidden">The shared app is not visible. Bring it to the front to resume.</string>
+    <string name="preview_hint">Preview of what will be sent. If this screen is being shared you will see it repeat; that is expected.</string>
+
+    <string name="stopped_user">Capture stopped.</string>
+    <string name="stopped_system">Capture ended. You or the system stopped sharing (for example from the status-bar cast chip, or because the screen was locked).</string>
+
+    <string name="failed_projection_rejected">Android refused to start screen capture. Tap Start again and approve the permission dialog.</string>
+    <string name="failed_foreground_denied">Android did not allow the capture service to start. Make sure the app is open and try again.</string>
+    <string name="failed_internal">Screen capture failed to start. Please try again.</string>
+
+    <string name="message_consent_declined">Screen capture permission was declined. Nothing is being shared.</string>
+    <string name="message_no_cast_settings">This device has no system cast settings screen.</string>
+    <string name="message_start_failed">Could not start the capture service. Please try again.</string>
+
+    <string name="notifications_off_title">Notifications are off</string>
+    <string name="notifications_off_body">Capture still works, but you won\'t see the Stop button in the notification shade. Use Stop in this app or the status-bar cast chip, or turn notifications on.</string>
+
+    <string name="notification_channel_name">Screen capture</string>
+    <string name="notification_channel_description">Shown while your screen is being captured.</string>
+    <string name="notification_title">Screen capture is on</string>
+    <string name="notification_text_starting">Starting…</string>
+    <string name="notification_text_capturing">Capturing %1$d × %2$d</string>
+</resources>

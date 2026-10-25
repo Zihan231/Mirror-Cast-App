@@ -1,0 +1,59 @@
+# Cloud deployment: Caddy (TLS, automatic certs) -> signaling, plus coturn for cross-network TURN.
+#
+#   cp .env.example .env    # fill in SIGNALING_DOMAIN, TURN_SECRET, TURN_EXTERNAL_IP, TURN_REALM
+#   docker compose up -d --build
+#
+# Ports to open: 80/443 tcp (Caddy), 3478 udp+tcp and 49160-49200 udp (coturn).
+# coturn runs with host networking because it needs its relay port range reachable unchanged.
+# (Docker Desktop on macOS/Windows does not support host networking; use a Linux host.)
+
+services:
+  signaling:
+    build: ../server
+    restart: unless-stopped
+    environment:
+      MODE: cloud
+      PORT: "8080"
+      TRUST_PROXY: "true"
+      TRUST_PROXY_HOPS: "1"
+      PUBLIC_URL: wss://${SIGNALING_DOMAIN}/ws
+      STUN_URLS: stun:${SIGNALING_DOMAIN}:3478
+      TURN_URLS: turn:${SIGNALING_DOMAIN}:3478?transport=udp,turn:${SIGNALING_DOMAIN}:3478?transport=tcp
+      TURN_SECRET: ${TURN_SECRET:?set TURN_SECRET in .env}
+      PAIRING_SECRET: ${PAIRING_SECRET:-}
+      LOG_LEVEL: info
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: ["no-new-privileges:true"]
+    expose: ["8080"]
+
+  caddy:
+    image: caddy:2-alpine
+    restart: unless-stopped
+    depends_on: [signaling]
+    environment:
+      SIGNALING_DOMAIN: ${SIGNALING_DOMAIN:?set SIGNALING_DOMAIN in .env}
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+
+  coturn:
+    image: coturn/coturn:4.6
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - ./turnserver.conf:/etc/coturn/turnserver.conf:ro
+    command:
+      - -c
+      - /etc/coturn/turnserver.conf
+      - --static-auth-secret=${TURN_SECRET:?set TURN_SECRET in .env}
+      - --realm=${SIGNALING_DOMAIN}
+      - --external-ip=${TURN_EXTERNAL_IP:?set TURN_EXTERNAL_IP in .env}
+
+volumes:
+  caddy_data:
+  caddy_config:
