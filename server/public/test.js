@@ -118,6 +118,8 @@ function teardown() {
   showPanel(true);
 }
 
-$("fs").onclick = () => (video.requestFullscreen ? video.requestFullscreen() : null);
+// Fullscreen the whole viewer (not just the <video>) so the stats overlay stays visible.
+$("fs").onclick = () => { const v = $("viewer"); if (v.requestFullscreen) v.requestFullscreen(); };
+video.ondblclick = $("fs").onclick;
 $("newcode").onclick = () => { teardown(); send({ type: "bye" }); send({ type: "create-pairing" }); };
 connect();

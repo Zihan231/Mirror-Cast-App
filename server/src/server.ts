@@ -42,7 +42,7 @@ export interface ServerDeps {
 export async function startServer(config: Config, log: Logger, deps: ServerDeps = {}): Promise<RunningServer> {
   const hub = new SignalingHub(config, deps.store ?? new MemoryPairingStore(), log);
   const startedAt = Date.now();
-  const testAssets = config.testPage ? loadTestAssets() : null;
+  if (config.testPage) loadTestAssets(); // fail at startup, not on first request, if public/ is missing
   const connectionsByIp = new Map<string, number>();
 
   const handler = (req: IncomingMessage, res: import("node:http").ServerResponse): void => {
@@ -53,7 +53,8 @@ export async function startServer(config: Config, log: Logger, deps: ServerDeps 
       });
       return;
     }
-    const asset = req.method === "GET" ? testAssets?.get((req.url ?? "").split("?")[0] ?? "") : undefined;
+    // Re-read per request: it is a dev page, and edits then show up without restarting the server.
+    const asset = req.method === "GET" && config.testPage ? loadTestAssets().get((req.url ?? "").split("?")[0] ?? "") : undefined;
     if (asset) {
       res.writeHead(200, { "content-type": asset.type, "cache-control": "no-store", "content-security-policy": TEST_PAGE_CSP, "x-content-type-options": "nosniff" });
       res.end(asset.body);
