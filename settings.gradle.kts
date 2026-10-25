@@ -16,7 +16,8 @@ dependencyResolutionManagement {
 
 rootProject.name = "mirror"
 
-// Modules are added as their steps land: :core-common, :app-receiver.
+// :core-common is added when a step needs shared Android-free helpers.
 include(":core-signaling")
 include(":core-webrtc")
 include(":app-sender")
+include(":app-receiver")

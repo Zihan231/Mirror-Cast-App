@@ -6,7 +6,7 @@ import app.mirror.core.webrtc.SwitchableVideoSink
 import app.mirror.core.webrtc.WebRtcRuntime
 import app.mirror.sender.capture.CaptureRepository
 import app.mirror.sender.capture.CaptureState
-import app.mirror.sender.stream.ServerAddress
+import app.mirror.core.signaling.ServerAddress
 import app.mirror.sender.stream.StreamController
 import app.mirror.sender.stream.StreamState
 import app.mirror.sender.stream.StreamTarget

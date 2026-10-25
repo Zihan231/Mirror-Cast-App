@@ -1,6 +1,7 @@
 package app.mirror.core.webrtc
 
 import android.content.Context
+import org.webrtc.audio.AudioDeviceModule
 import org.webrtc.DefaultVideoDecoderFactory
 import org.webrtc.DefaultVideoEncoderFactory
 import org.webrtc.EglBase
@@ -10,7 +11,11 @@ import org.webrtc.PeerConnectionFactory
  * Process-wide WebRTC state: native init, the shared EGL context and the factory.
  * Create exactly one per process (the apps provide it as a singleton).
  */
-class WebRtcRuntime(context: Context) {
+class WebRtcRuntime(
+    context: Context,
+    /** The receiver passes a playout-only module routed to media output; the sender uses the default. */
+    private val audioDeviceModule: AudioDeviceModule? = null,
+) {
     private val appContext = context.applicationContext
 
     init {
@@ -24,6 +29,7 @@ class WebRtcRuntime(context: Context) {
 
     val factory: PeerConnectionFactory by lazy {
         PeerConnectionFactory.builder()
+            .apply { audioDeviceModule?.let(::setAudioDeviceModule) }
             .setVideoEncoderFactory(DefaultVideoEncoderFactory(eglBase.eglBaseContext, true, true))
             .setVideoDecoderFactory(DefaultVideoDecoderFactory(eglBase.eglBaseContext))
             .createPeerConnectionFactory()

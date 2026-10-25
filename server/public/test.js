@@ -102,7 +102,8 @@ function startStats() {
         const mbps = lastTs ? ((s.bytesReceived - lastBytes) * 8 / (s.timestamp - lastTs) / 1000).toFixed(1) : "…";
         lastBytes = s.bytesReceived; lastTs = s.timestamp;
         const jb = s.jitterBufferEmittedCount ? (s.jitterBufferDelay / s.jitterBufferEmittedCount * 1000).toFixed(0) : "?";
-        line = `${codec}  ${s.frameWidth || "?"}x${s.frameHeight || "?"}  ${Math.round(s.framesPerSecond || 0)} fps  ${mbps} Mbps  jitter-buffer ${jb} ms  lost ${s.packetsLost}`;
+        line = `${codec}  received ${s.frameWidth || "?"}x${s.frameHeight || "?"}  ${Math.round(s.framesPerSecond || 0)} fps  ${mbps} Mbps  jitter-buffer ${jb} ms  lost ${s.packetsLost}\n` +
+          `video ${video.videoWidth}x${video.videoHeight}  shown in ${video.clientWidth}x${video.clientHeight}  page v3`;
       }
     });
     statsEl.textContent = line;

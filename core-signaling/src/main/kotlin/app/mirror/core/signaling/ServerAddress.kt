@@ -1,4 +1,4 @@
-package app.mirror.sender.stream
+package app.mirror.core.signaling
 
 import java.net.URI
 import java.net.URISyntaxException

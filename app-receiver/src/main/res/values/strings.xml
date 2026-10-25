@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Mirror</string>
+
+    <string name="server_title">Connect to a server</string>
+    <string name="server_found">Found on your network</string>
+    <string name="server_searching">Searching your network…</string>
+    <string name="server_none_found">No server found yet. Make sure it is running in LAN mode on this Wi-Fi, or enter its address below.</string>
+    <string name="server_manual">Or enter the address</string>
+    <string name="server_hint">192.168.0.5:8080</string>
+    <string name="server_invalid">Enter a host:port or a ws:// / wss:// address.</string>
+    <string name="server_use_last">Use last server: %1$s</string>
+    <string name="action_connect">Connect</string>
+    <string name="action_change_server">Change server</string>
+    <string name="action_approve">Approve</string>
+    <string name="action_reject">Reject</string>
+    <string name="action_retry">Try again</string>
+
+    <string name="connecting_to">Connecting to %1$s…</string>
+    <string name="reconnecting_to">Cannot reach %1$s. Retrying…</string>
+
+    <string name="pairing_title">Enter this code on your phone</string>
+    <string name="pairing_server">Server: %1$s</string>
+    <string name="pairing_expires">Code expires in %1$d s</string>
+    <string name="pairing_refreshing">Getting a new code…</string>
+
+    <string name="approval_title">%1$s wants to mirror its screen to this TV</string>
+    <string name="approval_hint">Only approve if you started this on your device. Press Back to reject.</string>
+    <string name="approval_countdown">Request expires in %1$d s</string>
+
+    <string name="stream_starting">Starting the stream from %1$s…</string>
+
+    <string name="notice_session_ended">The device stopped sharing.</string>
+    <string name="notice_approval_timeout">The request timed out. Use the new code below.</string>
+    <string name="notice_connection_failed">The video connection failed. Check that both devices are on the same network.</string>
+
+    <string name="failed_title">Something went wrong</string>
+    <string name="failed_server_error">The server rejected the request: %1$s</string>
+
+    <string name="debug_title">Debug (MENU or INFO to hide)</string>
+    <string name="debug_latency">Latency ≈ %1$d ms  (net %2$d + buffer %3$d + decode %4$d)</string>
+    <string name="debug_video">%1$d × %2$d @ %3$d fps</string>
+    <string name="debug_bitrate">%1$d kbit/s · lost %2$d packets</string>
+    <string name="debug_codec">%1$s · decoder %2$s</string>
+    <string name="debug_waiting">Waiting for statistics…</string>
+</resources>

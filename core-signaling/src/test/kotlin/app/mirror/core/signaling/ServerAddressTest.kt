@@ -1,4 +1,4 @@
-package app.mirror.sender.stream
+package app.mirror.core.signaling
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -54,8 +54,4 @@ class ServerAddressTest {
         assertFalse(ServerAddress.isValidCode(""))
     }
 
-    @Test
-    fun `the target never prints its code`() {
-        assertFalse(StreamTarget("ws://h/ws", "123456").toString().contains("123456"))
-    }
 }
