@@ -131,6 +131,21 @@ describe("transport policy", () => {
     expect(() => loadConfig({ TURN_URLS: "turn:x:3478", ALLOW_INSECURE_WS: "true" })).toThrow(/TURN_SECRET/);
   });
 
+  it("lets the dev test page (same origin) connect only when the page is enabled", async () => {
+    h = await startHarness({ ENABLE_TEST_PAGE: "true" });
+    const host = new URL(h.httpUrl).host;
+    const ok = await h.connect({ origin: `http://${host}` });
+    expect((await ok.request({ type: "ping" })).type).toBe("pong");
+    await expect(h.connect({ origin: "http://evil.example" })).rejects.toThrow(/403/);
+    await expect(h.connect({ origin: `http://${host}.evil.example` })).rejects.toThrow(/403/);
+  });
+
+  it("does not trust same-origin when the test page is disabled", async () => {
+    h = await startHarness();
+    const host = new URL(h.httpUrl).host;
+    await expect(h.connect({ origin: `http://${host}` })).rejects.toThrow(/403/);
+  });
+
   it("rejects browser origins by default", async () => {
     h = await startHarness();
     await expect(h.connect({ origin: "https://evil.example" })).rejects.toThrow(/403/);
